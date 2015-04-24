@@ -70,6 +70,8 @@ def save_all(json_file, endpoint, extra_dir=''):
         print("Getting: " + repo['clone_url'])
         save_name = repo['full_name'].replace('/', '__')
         if extra_dir:
+            if extra_dir[-1] == '/' or extra_dir[-1] == '\\':
+                extra_dir = extra_dir[:-1]
             save_name = extra_dir + '/' + save_name
         save_repo(repo['clone_url'], save_name)
 
