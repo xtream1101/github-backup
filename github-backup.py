@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description='backup github account')
 parser.add_argument('user', metavar='userA', type=str, help='github user account')
 parser.add_argument('output_dir', metavar='/git_backups/', type=str, default='.',
                     help='path that the backups will be stored in')
-parser.add_argument('-f', '--format_dir', default="$user/$user__$repo", help='setup dir format of repos')
+parser.add_argument('-f', '--format_dir', default="&user/&repo__&user", help='setup dir format of repos')
 parser.add_argument('-up', '--update', action='store_true', help='get list of users repos')
 parser.add_argument('-s', '--starred', action='store_true', help='get users starred reops')
 parser.add_argument('-m', '--mirror', action='store_true', help='mirror the repos')
@@ -67,13 +67,13 @@ def save_json(file, data):
 def save_all(json_file, endpoint, extra_dir=''):
     # Loop through repos to get the url and name to pass along
     for repo in get_json(json_file, endpoint):
-        print("Getting: " + repo['clone_url'])
+        print("Getting: " + repo['git_url'])
         # Build save path
         save_name = format_dir.replace('&user', repo['owner']['login']).replace('&repo', repo['name'])
         if extra_dir:
             save_name = extra_dir + '/' + save_name
         save_name = base_dir + save_name
-        save_repo(repo['clone_url'], save_name)
+        save_repo(repo['git_url'], save_name)
 
 
 def save_repo(url, repo_dir):

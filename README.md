@@ -5,7 +5,7 @@ Backup/mirror all public github repos of a user
 
 Usage
 -----
-`python github-backup.py user dir [-h] [-up] [-f] [-s] [-m]`   
+`python github-backup.py user dir [-h] [-up] [-f "$user/$repo"] [-s] [-m]`   
 
 Positional arguments   
 user: github username   
