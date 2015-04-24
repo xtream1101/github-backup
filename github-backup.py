@@ -67,13 +67,13 @@ def save_json(file, data):
 def save_all(json_file, endpoint, extra_dir=''):
     # Loop through repos to get the url and name to pass along
     for repo in get_json(json_file, endpoint):
-        print("Getting: " + repo['git_url'])
+        print("Getting: " + repo['ssh_url'])
         # Build save path
         save_name = format_dir.replace('&user', repo['owner']['login']).replace('&repo', repo['name'])
         if extra_dir:
             save_name = extra_dir + '/' + save_name
         save_name = base_dir + save_name
-        save_repo(repo['git_url'], save_name)
+        save_repo(repo['ssh_url'], save_name)
 
 
 def save_repo(url, repo_dir):
@@ -105,8 +105,8 @@ def humanize_time(secs):
 
 if __name__ == "__main__":
     start_time = time.time()
-    repo_file = base_dir + '_' + user + '_repos.json'
-    starred_file = base_dir + '_' + user + '_starred.json'
+    repo_file = base_dir +  user + '_repos.json'
+    starred_file = base_dir + user + '_starred.json'
 
     # Get all the repos of the user
     save_all(repo_file, 'repos')
