@@ -2,13 +2,14 @@ import os
 import json
 import argparse
 import urllib.request
-
+import time
 
 # set up args
 parser = argparse.ArgumentParser(description='backup github account')
 parser.add_argument('user', metavar='userA', type=str, help='github user account')
 parser.add_argument('output_dir', metavar='/git_backups/', type=str, default='.',
                     help='path that the backups will be stored in')
+parser.add_argument('-f', '--format_dir', default="$user/$user__$repo", help='setup dir format of repos')
 parser.add_argument('-up', '--update', action='store_true', help='get list of users repos')
 parser.add_argument('-s', '--starred', action='store_true', help='get users starred reops')
 parser.add_argument('-m', '--mirror', action='store_true', help='mirror the repos')
@@ -16,13 +17,11 @@ args = parser.parse_args()
 
 # get args
 user = args.user
-out_dir = args.output_dir
+base_dir = args.output_dir + '/'
+format_dir = args.format_dir
 starred = args.starred
 update = args.update
 mirror = args.mirror
-
-base_dir = out_dir + '/' + user + '/'
-json_file = base_dir + '_' + user + '.json'
 
 
 def get_json(json_file, endpoint):
@@ -31,6 +30,7 @@ def get_json(json_file, endpoint):
     :return: dictionary of git data on the repos
     """
     if update or not os.path.isfile(json_file):
+        print("Fetching repo list form github")
         empty = False
         page = 1
         user_data = []
@@ -68,29 +68,28 @@ def save_all(json_file, endpoint, extra_dir=''):
     # Loop through repos to get the url and name to pass along
     for repo in get_json(json_file, endpoint):
         print("Getting: " + repo['clone_url'])
-        save_name = repo['full_name'].replace('/', '__')
+        # Build save path
+        save_name = format_dir.replace('&user', repo['owner']['login']).replace('&repo', repo['name'])
         if extra_dir:
-            if extra_dir[-1] == '/' or extra_dir[-1] == '\\':
-                extra_dir = extra_dir[:-1]
             save_name = extra_dir + '/' + save_name
+        save_name = base_dir + save_name
         save_repo(repo['clone_url'], save_name)
 
 
-def save_repo(url, name):
+def save_repo(url, repo_dir):
     """
     Add new repo or update current
     :param url: git url to clone
-    :param name: name of repo
+    :param repo_dir: name of repo
     :return:
     """
-    update_cmd = ""
+    print(repo_dir)
     add_cmd = ""
     if mirror:
-        repo_dir = base_dir + name + "__mirror"
+        repo_dir += "__mirror"
         update_cmd = "remote update"
         add_cmd = "--mirror"
     else:
-        repo_dir = base_dir + name
         update_cmd = "pull"
 
     if os.path.exists(repo_dir):
@@ -99,7 +98,13 @@ def save_repo(url, name):
         os.system("git clone " + add_cmd + " " + url + " " + repo_dir)
 
 
+def humanize_time(secs):
+    mins, secs = divmod(secs, 60)
+    hours, mins = divmod(mins, 60)
+    return '%02d:%02d:%02d' % (hours, mins, secs)
+
 if __name__ == "__main__":
+    start_time = time.time()
     repo_file = base_dir + '_' + user + '_repos.json'
     starred_file = base_dir + '_' + user + '_starred.json'
 
@@ -107,4 +112,8 @@ if __name__ == "__main__":
     save_all(repo_file, 'repos')
     if starred:
         save_all(starred_file, 'starred', 'starred/')
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print("\nTime Elapsed: " + humanize_time(elapsed_time) + "\n")
 
