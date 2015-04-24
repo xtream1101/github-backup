@@ -43,6 +43,11 @@ def get_json(json_file, endpoint):
                 user_data.extend(repo_list)
             else:
                 empty = True
+            # Saves 1 api call per user
+            #   because each page is filled with 30 repos,
+            #   so if a page has less you are on the last page
+            if len(repo_list) < 30:
+                empty = True
             page += 1
         save_json(json_file, user_data)
     else:
@@ -71,7 +76,7 @@ def save_all(json_file, endpoint, extra_dir=''):
         # Build save path
         save_name = format_dir.replace('&user', repo['owner']['login']).replace('&repo', repo['name'])
         if extra_dir:
-            save_name = extra_dir + '/' + save_name
+            save_name = user + '/' + extra_dir + '/' + save_name.split('/')[-1]
         save_name = base_dir + save_name
         save_repo(repo['ssh_url'], save_name)
 
@@ -111,7 +116,7 @@ if __name__ == "__main__":
     # Get all the repos of the user
     save_all(repo_file, 'repos')
     if starred:
-        save_all(starred_file, 'starred', 'starred/')
+        save_all(starred_file, 'starred', '_starred/')
 
     end_time = time.time()
     elapsed_time = end_time - start_time
